@@ -1,5 +1,7 @@
 package com.linkup.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +13,8 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface UrlRepository extends JpaRepository<UrlMapping, Long> {
+    
+    Optional<UrlMapping> findByShortCode(String shortCode);
 
     @Modifying
     @Transactional

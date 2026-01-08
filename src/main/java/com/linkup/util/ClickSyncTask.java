@@ -1,4 +1,4 @@
-package com.linkup.service;
+package com.linkup.util;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
