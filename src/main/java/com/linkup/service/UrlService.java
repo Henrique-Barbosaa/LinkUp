@@ -1,11 +1,12 @@
 package com.linkup.service;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.linkup.advice.exceptions.InvalidUrlException;
+import com.linkup.advice.exceptions.UrlNotFoundException;
 import com.linkup.dto.UrlStatsResponse;
 import com.linkup.model.UrlMapping;
 import com.linkup.repository.UrlRepository;
@@ -52,7 +53,7 @@ public class UrlService {
     @Transactional
     public String shortenUrl(String originalUrl) {
         if (!isUrlAlive(originalUrl)) {
-            throw new IllegalArgumentException("A URL fornecida está inacessível ou é inválida.");
+            throw new InvalidUrlException("A URL fornecida está inacessível ou é inválida.");
         }
 
         UrlMapping entity = new UrlMapping();
@@ -77,7 +78,7 @@ public class UrlService {
         }
 
         UrlMapping entity = repository.findByShortCode(shortCode)
-                .orElseThrow(() -> new RuntimeException("URL não encontrada para o código: " + shortCode));
+                .orElseThrow(() -> new UrlNotFoundException("URL não encontrada para o código: " + shortCode));
 
         redisTemplate.opsForValue().set(shortCode, entity.getOriginalUrl(), Duration.ofHours(24));
         redisTemplate.opsForValue().increment("clicks:" + shortCode);
@@ -87,7 +88,7 @@ public class UrlService {
 
     public UrlStatsResponse getStats(String shortCode) {
         UrlMapping entity = repository.findByShortCode(shortCode)
-                .orElseThrow(() -> new RuntimeException("URL não encontrada para o código: " + shortCode));
+                .orElseThrow(() -> new UrlNotFoundException("URL não encontrada para o código: " + shortCode));
 
         String redisClicks = redisTemplate.opsForValue().get("clicks:" + shortCode);
         long clicksInRedis = (redisClicks != null) ? Long.parseLong(redisClicks) : 0L;
