@@ -1,8 +1,10 @@
 package com.linkup.service;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.linkup.dto.UrlStatsResponse;
 import com.linkup.model.UrlMapping;
@@ -17,15 +19,42 @@ public class UrlService {
     private final UrlRepository repository;
     private final Base62Converter converter;
     private final StringRedisTemplate redisTemplate;
+    private final WebClient webClient;
 
-    public UrlService(UrlRepository repository, Base62Converter converter, StringRedisTemplate redisTemplate) {
+    public UrlService(
+        UrlRepository repository, 
+        Base62Converter converter, 
+        StringRedisTemplate redisTemplate, 
+        WebClient webClient
+    ) {
         this.repository = repository;
         this.converter = converter;
         this.redisTemplate = redisTemplate;
+        this.webClient = webClient;
+    }
+
+    private boolean isUrlAlive(String url) {
+        try {
+            return Boolean.TRUE.equals(
+                webClient.head()
+                    .uri(url)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .map(response -> response.getStatusCode().is2xxSuccessful())
+                    .onErrorReturn(false)
+                    .block()
+            );
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Transactional
     public String shortenUrl(String originalUrl) {
+        if (!isUrlAlive(originalUrl)) {
+            throw new IllegalArgumentException("A URL fornecida está inacessível ou é inválida.");
+        }
+
         UrlMapping entity = new UrlMapping();
         entity.setOriginalUrl(originalUrl);
         entity = repository.save(entity);

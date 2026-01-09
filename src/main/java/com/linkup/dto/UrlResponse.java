@@ -1,5 +1,5 @@
 package com.linkup.dto;
 
 public record UrlResponse(
-    String originalUrl
+    String shortenUrl
 ) {}
