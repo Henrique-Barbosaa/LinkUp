@@ -23,6 +23,23 @@ services:
     volumes:
       - redis_data:/data
 
+  app:
+    build: .
+    container_name: url-shortener-api
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-db
+      - redis-cache
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/url_shortener
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=redis-cache
+      - SPRING_DATA_REDIS_PORT=6379
+      - HASHIDS_SALT=${HASHIDS_SALT}
+
 volumes:
   postgres_data:
   redis_data:
