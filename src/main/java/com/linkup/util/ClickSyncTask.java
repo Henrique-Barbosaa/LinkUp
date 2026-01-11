@@ -21,7 +21,7 @@ public class ClickSyncTask {
         this.repository = repository;
     }
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 600000)
     @Transactional
     public void syncClicksToDatabase() {
         Set<String> keys = redisTemplate.keys("clicks:*");

@@ -30,7 +30,7 @@ public class UrlController {
         String prefix = httpRequest.getRequestURL().toString().replace("/shorten", "/");
         String fullShortUrl = prefix + shortCode;
 
-        return ResponseEntity.ok(new UrlResponse(fullShortUrl));
+        return ResponseEntity.ok(new UrlResponse(fullShortUrl, request.originalUrl(), java.time.LocalDateTime.now()));
     }
 
     @GetMapping("/{shortCode}")

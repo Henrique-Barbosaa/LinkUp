@@ -1,5 +1,6 @@
 package com.linkup.service;
 
+import org.hashids.Hashids;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +11,6 @@ import com.linkup.advice.exceptions.UrlNotFoundException;
 import com.linkup.dto.UrlStatsResponse;
 import com.linkup.model.UrlMapping;
 import com.linkup.repository.UrlRepository;
-import com.linkup.util.Base62Converter;
 
 import java.time.Duration;
 
@@ -18,18 +18,18 @@ import java.time.Duration;
 public class UrlService {
 
     private final UrlRepository repository;
-    private final Base62Converter converter;
+    private final Hashids hashids;
     private final StringRedisTemplate redisTemplate;
     private final WebClient webClient;
 
     public UrlService(
         UrlRepository repository, 
-        Base62Converter converter, 
+        Hashids hashids, 
         StringRedisTemplate redisTemplate, 
         WebClient webClient
     ) {
         this.repository = repository;
-        this.converter = converter;
+        this.hashids = hashids;
         this.redisTemplate = redisTemplate;
         this.webClient = webClient;
     }
@@ -60,7 +60,7 @@ public class UrlService {
         entity.setOriginalUrl(originalUrl);
         entity = repository.save(entity);
 
-        String shortCode = converter.encode(entity.getId());
+        String shortCode = hashids.encode(entity.getId());
 
         entity.setShortCode(shortCode);
         repository.save(entity);
